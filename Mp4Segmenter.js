@@ -26,7 +26,7 @@ class Mp4Segmenter extends Transform {
         console.log('init segment ready');
     }
 
-    _findFtyp(chunk) {//todo done
+    _findFtyp(chunk) {
         //console.log('findFtyp');
         if (chunk[4] !== 0x66 || chunk[5] !== 0x74 || chunk[6] !== 0x79 || chunk[7] !== 0x70) {
             throw new Error('cannot find ftyp');
@@ -46,7 +46,7 @@ class Mp4Segmenter extends Transform {
         }
     }
 
-    _findMoov(chunk) {//todo done
+    _findMoov(chunk) {
         //console.log('findMoov');
         if (chunk[4] !== 0x6D || chunk[5] !== 0x6F || chunk[6] !== 0x6F || chunk[7] !== 0x76) {
             throw new Error('cannot find moov');
