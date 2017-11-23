@@ -1,0 +1,29 @@
+{
+  "name": "mse",
+  "version": "1.0.0",
+  "description": "Live stream h264 encoded mp4 video on media source extensions using ffmpeg, node.js, socket.io, and express",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "live",
+    "stream",
+    "mp4",
+    "video",
+    "media",
+    "source",
+    "extensions",
+    "h264",
+    "ffmpeg",
+    "node.js",
+    "socket.io",
+    "express"
+  ],
+  "author": "Kevin Godell <kevin.godell@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.2",
+    "socket.io": "^2.0.4"
+  }
+}
