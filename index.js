@@ -15,7 +15,7 @@ const Mp4Segmenter = new require('./Mp4Segmenter');
 
 const mp4segmenter = new Mp4Segmenter();
 
-const ffmpeg = spawn('ffmpeg', ['-loglevel', 'debug', '-rtsp_transport', 'tcp', '-i', 'rtsp://131.95.3.162/axis-media/media.3gp', '-an', '-c:v', 'copy', '-f', 'mp4', '-movflags', '+frag_keyframe+empty_moov+default_base_moof', 'pipe:1'], {stdio : ['ignore', 'pipe', 'inherit'/* change stdio[2] inherit to ignore to hide ffmpeg debug to stderr */]});
+const ffmpeg = spawn('ffmpeg', ['-loglevel', 'debug', '-reorder_queue_size', '5', '-rtsp_transport', 'tcp', '-i', 'rtsp://131.95.3.162/axis-media/media.3gp', '-an', '-c:v', 'copy', '-f', 'mp4', '-movflags', '+frag_keyframe+empty_moov+default_base_moof', '-metadata', 'title="media source extensions"', 'pipe:1'], {stdio : ['ignore', 'pipe', 'inherit'/* change stdio[2] inherit to ignore to hide ffmpeg debug to stderr */]});
 
 ffmpeg.on('error', (error) => {
     console.log('error', error);
