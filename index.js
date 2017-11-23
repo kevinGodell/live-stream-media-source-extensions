@@ -11,7 +11,7 @@ const io = require('socket.io')(http/*, {origins: allowedOrigins}*/);
 
 const { spawn } = require('child_process');
 
-const Mp4Segmenter = new require('./Mp4Segmenter2');
+const Mp4Segmenter = new require('./Mp4Segmenter');
 
 const mp4segmenter = new Mp4Segmenter();
 
