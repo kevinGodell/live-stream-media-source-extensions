@@ -10,3 +10,5 @@ npm install
 
 node index.js
 ```
+
+Open your browser to localhost:3000
