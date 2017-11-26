@@ -10,6 +10,7 @@ class Mp4Segmenter extends Transform {
             this._callback = callback;
         }
         this._parseChunk = this._findFtyp;
+        this._foundSegment = false;
     }
 
     get initSegment() {
@@ -76,8 +77,21 @@ class Mp4Segmenter extends Transform {
     _findMoof(chunk) {
         //console.log('findMoof');
         if (chunk[4] !== 0x6D || chunk[5] !== 0x6F || chunk[6] !== 0x6F || chunk[7] !== 0x66) {
-            console.log(chunk.slice(0, 20).toString());
-            throw new Error('cannot find moof');
+            //did not previously parse a complete segment
+            if (this._foundSegment === false) {
+                console.log(chunk.slice(0, 20).toString());
+                throw new Error('immediately failed to find moof');
+            } else {
+                //have to do a string search for moof or mdat and start loop again,
+                //sometimes ffmpeg gets a blast of data and sends it through corrupt
+                if (chunk.toString().indexOf('moof') !== 1) {
+                    console.log('found moof at ', chunk.toString().indexOf('moof'));
+                }
+                if (chunk.toString().indexOf('mdat') !== 1) {
+                    console.log('found mdat at ', chunk.toString().indexOf('mdat'));
+                }
+                throw new Error('failed to find moof after already running good');
+            }
         }
         const chunkLength = chunk.length;
         this._moofLength = chunk.readUIntBE(0, 4);
@@ -102,6 +116,7 @@ class Mp4Segmenter extends Transform {
             this._mdatBuffer.push(chunk);
             this._mdatBufferSize += chunk.length;
             if (this._mdatLength === this._mdatBufferSize) {
+                this._foundSegment = true;
                 //console.log('mdatLength === mdatBufferSize');
                 const data = Buffer.concat([this._moof, ...this._mdatBuffer], (this._moofLength + this._mdatLength));
                 delete this._moof;
@@ -120,6 +135,7 @@ class Mp4Segmenter extends Transform {
                 }
                 this._parseChunk = this._findMoof;
             } else if (this._mdatLength < this._mdatBufferSize) {
+                this._foundSegment = true;
                 //console.log('mdatLength', this._mdatLength, '<', 'mdatBufferSize', this._mdatBufferSize);
                 const data = Buffer.concat([this._moof, ...this._mdatBuffer], (this._moofLength + this._mdatLength));
                 const sliceIndex = this._mdatBufferSize - this._mdatLength;
