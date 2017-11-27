@@ -1,4 +1,4 @@
-// jshint esversion: 6, globalstrict: true, strict: true, bitwise: true
+// jshint esversion: 6, globalstrict: true, strict: true, bitwise: true, node: true
 'use strict';
 
 const { Transform } = require('stream');
@@ -24,6 +24,16 @@ class Mp4Segmenter extends Transform {
 
     set initSegment(value) {
         this._initSegment = value;
+        let audioString = '';
+        if (this._initSegment.indexOf('mp4a') !== -1) {
+            audioString = ', mp4a.40.2';
+        }
+        const index = this._initSegment.indexOf('avcC') + 5;
+        if (index === -1) {
+            throw new Error('header does not contain codec information');
+        }
+        this._codecString = `video/mp4; codecs="avc1.${this._initSegment.slice(index , index + 3).toString('hex').toUpperCase()}${audioString}"`;
+        console.log(this._codecString);
         console.log('init segment ready');
     }
 
