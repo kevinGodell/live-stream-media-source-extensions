@@ -1,4 +1,6 @@
 # live-stream-media-source-extensions
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/kevinGodell/live-stream-media-source-extensions.svg)](https://greenkeeper.io/)
 Live stream h264 encoded mp4 video on media source extensions using ffmpeg, node.js, socket.io, and express. Works in chrome, firefox, safari, and android. Not iOS compatible.
 
 ```
