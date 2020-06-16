@@ -11,9 +11,9 @@ const io = require('socket.io')(http/*, {origins: allowedOrigins}*/);
 
 const { spawn } = require('child_process');
 
-const Mp4Segmenter = new require('./Mp4Segmenter');
+const Mp4Frag = require('mp4frag');
 
-const mp4segmenter = new Mp4Segmenter();
+const mp4frag = new Mp4Frag();
 
 const ffmpeg = spawn('ffmpeg', ['-loglevel', 'debug', '-reorder_queue_size', '5', '-rtsp_transport', 'tcp', '-i', 'rtsp://192.168.1.22:554/user=admin_password=pass_channel=1_stream=0.sdp', '-an', '-c:v', 'copy', '-f', 'mp4', '-movflags', '+frag_keyframe+empty_moov+default_base_moof', '-metadata', 'title="media source extensions"', 'pipe:1'], {stdio : ['ignore', 'pipe', 'inherit'/* change stdio[2] inherit to ignore to hide ffmpeg debug to stderr */]});
 
@@ -25,7 +25,7 @@ ffmpeg.on('exit', (code, signal) => {
     console.log('exit', code, signal);
 });
 
-ffmpeg.stdio[1].pipe(mp4segmenter);
+ffmpeg.stdio[1].pipe(mp4frag);
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
@@ -36,14 +36,14 @@ app.get('/flv.min.js', (req, res) => {
 });
 
 app.get('/test.mp4', (req, res) => {
-    if (!mp4segmenter.initSegment) {
+    if (!mp4frag.initialization) {
         res.status(503);
         res.end('service not available');
         return;
     }
-    
+
     res.status(200);
-    res.write(mp4segmenter.initSegment);
+    res.write(mp4frag.initialization);
     ffmpeg.stdio[1].pipe(res);
     res.on('close', () => {
         ffmpeg.stdio[1].unpipe(res);
@@ -51,7 +51,7 @@ app.get('/test.mp4', (req, res) => {
 });
 
 app.get('/test2.mp4', (req, res) => {
-    if (!mp4segmenter.initSegment) {
+    if (!mp4frag.initialization) {
         res.status(503);
         res.end('service not available');
         return;
@@ -60,41 +60,41 @@ app.get('/test2.mp4', (req, res) => {
         res.write(data);
     }
     res.status(200);
-    res.write(mp4segmenter.initSegment);
-    mp4segmenter.on('segment', writeSegment);
+    res.write(mp4frag.initialization);
+    mp4frag.on('segment', writeSegment);
     res.on('close', () => {
-        mp4segmenter.removeListener('segment', writeSegment);
+        mp4frag.removeListener('segment', writeSegment);
     });
 });
 
 io.on('connection', (socket) => {
     console.log('A user connected');
-    
+
     function start() {
-        if (mp4segmenter.initSegment) {
-            socket.emit('segment', mp4segmenter.initSegment);
-            mp4segmenter.on('segment', emitSegment);
+        if (mp4frag.initialization) {
+            socket.emit('segment', mp4frag.initialization);
+            mp4frag.on('segment', emitSegment);
         } else {
             socket.emit('message', 'init segment not ready yet, reload page');
         }
     }
-    
+
     function pause() {
         console.log('pause');
     }
-    
+
     function resume() {
         console.log('resume');
     }
-    
+
     function stop() {
-        mp4segmenter.removeListener('segment', emitSegment);
+        mp4frag.removeListener('segment', emitSegment);
     }
-    
+
     function emitSegment(data) {
         socket.emit('segment', data);
     }
-    
+
     socket.on('message', (msg) => {
         switch (msg) {
             case 'start' :
